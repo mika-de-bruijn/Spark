@@ -1,0 +1,10 @@
+{
+  "name": "Spark",
+  "id": "1190355590064555972",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": [
+    "figma"
+  ],
+  "ui": "ui.html"
+}

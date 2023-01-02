@@ -1,0 +1,422 @@
+<style>
+    * {margin: 0; font-family: 'Space Grotesk', 'Inter', sans-serif;}
+    :root {--border: #E0E0E0; --primary: #C6EA13;}
+
+    .icon-btn {cursor: pointer; aspect-ratio: 1 / 1; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 5px; transition: .1s ease;}
+    .icon-btn:hover {background-color: #f4f4f4;}
+
+    .btn {padding: 14px; font-size: 15px; font-weight: 600; border-radius: 8px; border: none; outline: none; cursor: pointer; transition: .1s ease;}
+    .btn.primary {background-color: var(--primary);}
+    .btn:hover {opacity: .85;}
+
+    .wrapper {position: relative; height: 100%; overflow: hidden; user-select: none;}
+    .page {position: absolute; inset: 0; transition: .2s ease-in-out;}
+    .page.main.d-none {right: 100%; left: -100%;}
+    .page.sub.d-none {left: 100%; right: -100%;}
+
+    .page > .page-header {padding: 6px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border);}
+    .page > .page-header > * {display: flex; align-items: center;}
+    .page > .page-header .back {transform: rotate(180deg);}
+    .page > .page-header .page-title {font-size: 15px; font-weight: 600; margin-left: 8px;}
+
+    .page .page-body {padding: 0 15px;}
+    .page .page-body > .settings-group {padding: 20px 0; border-bottom: 1px solid var(--border);}
+    .page .page-body > .settings-group .header {display: flex; align-items: center; justify-content: space-between;}
+    .page .page-body > .settings-group .settings-title {font-size: 15px; font-weight: 600; margin-bottom: 8px;}
+    .page .page-body > .settings-group:last-child {border-bottom: 0; padding-bottom: 0;}
+
+    .page > .page-body > .settings-group .input-wrapper {display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;}
+    .page > .page-body > .settings-group .input-wrapper.--3 {grid-template-columns: repeat(3, 1fr); gap: 8px;}
+    .page > .page-body > .settings-group .input-wrapper .input {position: relative;}
+    .page > .page-body > .settings-group .input-wrapper input {border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-size: 15px; color: #000; font-weight: 500; width: 100%;}
+    .page > .page-body > .settings-group .input-wrapper input[type="radio"] {display: none;}
+    .page > .page-body > .settings-group .input-wrapper input[type="radio"] + label {padding: 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); display: flex; align-items: center; flex-direction: column; transition: .1s ease;}
+    .page > .page-body > .settings-group .input-wrapper input[type="radio"] + label:hover {background-color: #f4f4f4; }
+    .page > .page-body > .settings-group .input-wrapper input[type="radio"] + label p {font-weight: 600; font-size: 16px; margin-top: 8px;}
+    .page > .page-body > .settings-group .input-wrapper input[type="radio"]:checked + label {background-color: var(--primary); border-color: var(--primary);}
+    .page > .page-body > .settings-group .input-wrapper input[type="number"] {text-align: center; padding-left: 18px;}
+    .page > .page-body > .settings-group .input-wrapper label {font-size: 13px; margin-bottom: 4px; display: inline-block; font-weight: 500; color: #000;}
+    .page > .page-body > .settings-group .input-wrapper.colors input {padding-left: 46px;}
+
+    .page > .page-footer {position: absolute; bottom: 0; left: 0; right: 0; padding: 15px; border-top: 1px solid var(--border); display: grid; align-items: center; grid-template-columns: repeat(2, 1fr); column-gap: 8px;}
+
+    .page > .page-overlay {position: absolute; inset: 0; backdrop-filter: brightness(105%)blur(5px); z-index: 1; padding: 15px; display: flex; align-items: center; text-align: center; justify-content: center;}
+
+    #page__main .page-links {display: flex; flex-direction: column; row-gap: 10px; padding: 15px;}
+    #page__main .page-links .link {border: 1px solid var(--border); position: relative; border-radius: 8px; padding: 24px; display: flex; align-items: center; column-gap: 16px; transition: 0.1s ease; cursor: pointer;}
+    #page__main .page-links .link:hover {background-color: #f4f4f4;}
+    #page__main .page-links .link .chevron-right {position: absolute; top: 50%; transform: translateY(-50%); right: 24px;}
+    #page__main .page-links .link .new-badge {position: absolute; top: 8px; right: 8px; padding: 2px 4px; background-color: var(--primary); font-weight: 500; font-size: 12px; border-radius: 3px; line-height: 1;}
+    #page__main .page-links .link .new-badge svg {width: 9px; margin-bottom: -1px;}
+
+    .page > .page-body > .settings-group .input-wrapper.colors .color_preview {width: 31px; height: 31px; background-color: #000; border-radius: 6px; position: absolute; left: 6px; bottom: 6px; border: 1px solid var(--border);}
+    .page > .page-body > .settings-group .input-wrapper.colors .color_preview.primary {background-color: var(--contrast-primary);}
+    .page > .page-body > .settings-group .input-wrapper.colors .color_preview.secondary {background-color: var(--contrast-secondary);}
+    .page > .page-body > .settings-preview {background-color: #EFEFEF; color: #000; position: relative; padding: 50px 15px; margin: 0 -15px;}
+    .page > .page-body > .settings-preview.contrast_checker {background-color: var(--contrast-secondary); color: var(--contrast-primary);}
+    .page > .page-body > .settings-preview .section-label {position: absolute; left: 15px; top: 15px;}
+    .page > .page-body > .settings-preview .text {text-align: center;}
+    .page > .page-body > .settings-preview .text h3 {font-size: 24px; margin-bottom: 4px;}
+    .page > .page-body > .settings-preview .columns {display: flex; justify-content: space-between; column-gap: 8px;}
+    .page > .page-body > .settings-preview .columns > * {width: 100%; height: 100px; background-color: #aeaeae; border-radius: 5px;}
+    .page > .page-body > .settings-preview * {color: inherit;}
+    .page > .page-body .contrast-results .contrast {display: grid; grid-template-columns: 1fr 1fr; gap: 8px;}
+    .page > .page-body .contrast-results .contrast > * {padding: 12px 15px; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: space-between;}
+    .page > .page-body .contrast-results .contrast .main {padding: 20px; grid-column: 1 / 3;}
+    .page > .page-body .contrast-results .contrast .main .ratio {font-size: 24px; font-weight: 600;}
+    .page > .page-body .contrast-results .contrast :not(.checked) svg {display: none;}
+    .page > .page-body .contrast-results .contrast > * {font-weight: 500;}
+    
+
+</style>
+
+<div class="wrapper">
+
+    <div class="page main" id="page__main">
+        <div class="page-links">
+            <div class="link" data-page="grid_generator">
+                <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M16.4808 2H2V16.4808H16.4808V2Z" fill="black" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M37 2H22.5192V16.4808H37V2Z" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M37 22.5192H22.5192V37H37V22.5192Z" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M16.4808 22.5192H2V37H16.4808V22.5192Z" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M29.7941 6.11765V12.2941" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M26.7059 9.20587H32.8824" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M29.7941 26.7059V32.8823" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M26.7059 29.7941H32.8824" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M9.20588 26.7059V32.8823" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M6.11765 29.7941H12.2941" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                <div class="text">
+                    <h3>Grid generator</h3>
+                    <p>Place an element in a grid</p>
+                </div>
+                <div class="chevron-right">
+                    <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M1 13L7 7L1 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>    
+                </div>
+            </div>
+            <div class="link" data-page="columns_generator">
+                <svg width="37" height="31" viewBox="0 0 37 31" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M10 0H1C0.447715 0 0 0.447716 0 1V30C0 30.5523 0.447715 31 1 31H10C10.5523 31 11 30.5523 11 30V1C11 0.447715 10.5523 0 10 0Z" fill="black"/> <path d="M23 0H14C13.4477 0 13 0.447716 13 1V30C13 30.5523 13.4477 31 14 31H23C23.5523 31 24 30.5523 24 30V1C24 0.447715 23.5523 0 23 0Z" fill="black"/> <path d="M36 0H27C26.4477 0 26 0.447716 26 1V30C26 30.5523 26.4477 31 27 31H36C36.5523 31 37 30.5523 37 30V1C37 0.447715 36.5523 0 36 0Z" fill="black"/> </svg>
+                <div class="text">
+                    <h3>Columns generator</h3>
+                    <p>Divide an element in columns</p>
+                </div>
+                <div class="chevron-right">
+                    <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M1 13L7 7L1 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>    
+                </div>
+            </div>
+            <div class="link" data-page="contrast_checker">
+                <svg width="37" height="31" viewBox="0 0 37 31" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M16 0H1C0.447715 0 0 0.447716 0 1V30C0 30.5523 0.447715 31 1 31H16C16.5523 31 17 30.5523 17 30V1C17 0.447715 16.5523 0 16 0Z" fill="black"/> <path opacity="0.15" d="M36 0H21C20.4477 0 20 0.447716 20 1V30C20 30.5523 20.4477 31 21 31H36C36.5523 31 37 30.5523 37 30V1C37 0.447715 36.5523 0 36 0Z" fill="black"/> </svg>
+                <div class="text">
+                    <h3>Contrast checker</h3>
+                    <p>Check an element's contrast</p>
+                </div>
+                <div class="chevron-right">
+                    <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M1 13L7 7L1 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>    
+                </div>
+                <div class="new-badge">
+                    <svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M5.44444 1L1 6.4H5L4.55556 10L9 4.6H5L5.44444 1Z" stroke="black" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                    NEW
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page sub d-none" id="page__grid_generator" data-action="create-grid">
+        <div class="page-header">
+           <div class="left">
+                <div class="icon-btn back js-to-menu">
+                    <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M1 13L7 7L1 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>          
+                </div>
+                <p class="page-title">Grid Generator</p>
+           </div>
+           <div class="right">
+                <div class="icon-btn info">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M6.67206 6.60001C6.86014 6.06534 7.23138 5.6145 7.72002 5.32732C8.20866 5.04014 8.78317 4.93516 9.3418 5.03098C9.90042 5.1268 10.4071 5.41723 10.7721 5.85083C11.1371 6.28444 11.3369 6.83323 11.3361 7.40001C11.3361 9.00001 8.93606 9.80001 8.93606 9.80001" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M9 13H9.008" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>     
+                </div>
+           </div>
+        </div>
+        <div class="page-body">
+            <div class="settings-group">
+               <h2 class="settings-title">Grid direction</h2> 
+               <div class="input-wrapper --3">
+                    <div class="input">
+                        <input type="radio" name="grid_direction" value="horizontal" id="grid_direction_horizontal" checked>
+                        <label for="grid_direction_horizontal">
+                            <svg width="37" height="37" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M10 0H1C0.447715 0 0 0.447715 0 0.999999V36C0 36.5523 0.447715 37 1 37H10C10.5523 37 11 36.5523 11 36V1C11 0.447715 10.5523 0 10 0Z" fill="black"/> <path d="M23 0H14C13.4477 0 13 0.447715 13 0.999999V36C13 36.5523 13.4477 37 14 37H23C23.5523 37 24 36.5523 24 36V1C24 0.447715 23.5523 0 23 0Z" fill="black"/> <path d="M36 0H27C26.4477 0 26 0.447715 26 0.999999V36C26 36.5523 26.4477 37 27 37H36C36.5523 37 37 36.5523 37 36V1C37 0.447715 36.5523 0 36 0Z" fill="black"/> </svg>        
+                            <p>Horizontal</p>
+                        </label>
+                    </div>
+                    <div class="input">
+                        <input type="radio" name="grid_direction" value="vertical" id="grid_direction_vertical">
+                        <label for="grid_direction_vertical">
+                            <svg width="31" height="37" viewBox="0 0 31 37" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M31 10L31 1C31 0.447715 30.5523 -1.95703e-08 30 -4.37114e-08L1 -1.31134e-06C0.447718 -1.33548e-06 1.88778e-06 0.447714 1.86364e-06 0.999998L1.47023e-06 10C1.44609e-06 10.5523 0.447717 11 1 11L30 11C30.5523 11 31 10.5523 31 10Z" fill="black"/> <path d="M31 23L31 14C31 13.4477 30.5523 13 30 13L1 13C0.447718 13 1.88778e-06 13.4477 1.86364e-06 14L1.47023e-06 23C1.44609e-06 23.5523 0.447717 24 1 24L30 24C30.5523 24 31 23.5523 31 23Z" fill="black"/> <path d="M31 36L31 27C31 26.4477 30.5523 26 30 26L1 26C0.447718 26 1.88778e-06 26.4477 1.86364e-06 27L1.47023e-06 36C1.44609e-06 36.5523 0.447717 37 1 37L30 37C30.5523 37 31 36.5523 31 36Z" fill="black"/> </svg>
+                            <p>Vertical</p>
+                        </label>
+                    </div>
+                    <div class="input">
+                        <input type="radio" name="grid_direction" value="full" id="grid_direction_full">
+                        <label for="grid_direction_full">
+                            <svg width="37" height="37" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M10 0H1C0.447715 0 0 0.447715 0 1V10C0 10.5523 0.447715 11 1 11H10C10.5523 11 11 10.5523 11 10V1C11 0.447715 10.5523 0 10 0Z" fill="black"/> <path d="M10 13H1C0.447715 13 0 13.4477 0 14V23C0 23.5523 0.447715 24 1 24H10C10.5523 24 11 23.5523 11 23V14C11 13.4477 10.5523 13 10 13Z" fill="black"/> <path d="M10 26H1C0.447715 26 0 26.4477 0 27V36C0 36.5523 0.447715 37 1 37H10C10.5523 37 11 36.5523 11 36V27C11 26.4477 10.5523 26 10 26Z" fill="black"/> <path d="M23 0H14C13.4477 0 13 0.447715 13 1V10C13 10.5523 13.4477 11 14 11H23C23.5523 11 24 10.5523 24 10V1C24 0.447715 23.5523 0 23 0Z" fill="black"/> <path d="M23 13H14C13.4477 13 13 13.4477 13 14V23C13 23.5523 13.4477 24 14 24H23C23.5523 24 24 23.5523 24 23V14C24 13.4477 23.5523 13 23 13Z" fill="black"/> <path d="M23 26H14C13.4477 26 13 26.4477 13 27V36C13 36.5523 13.4477 37 14 37H23C23.5523 37 24 36.5523 24 36V27C24 26.4477 23.5523 26 23 26Z" fill="black"/> <path d="M36 0H27C26.4477 0 26 0.447715 26 1V10C26 10.5523 26.4477 11 27 11H36C36.5523 11 37 10.5523 37 10V1C37 0.447715 36.5523 0 36 0Z" fill="black"/> <path d="M36 13H27C26.4477 13 26 13.4477 26 14V23C26 23.5523 26.4477 24 27 24H36C36.5523 24 37 23.5523 37 23V14C37 13.4477 36.5523 13 36 13Z" fill="black"/> <path d="M36 26H27C26.4477 26 26 26.4477 26 27V36C26 36.5523 26.4477 37 27 37H36C36.5523 37 37 36.5523 37 36V27C37 26.4477 36.5523 26 36 26Z" fill="black"/> </svg>
+                            <p>Full grid</p>
+                        </label>
+                    </div>
+               </div>
+            </div>
+            <div class="settings-group">
+               <h2 class="settings-title">Grid size</h2> 
+               <div class="input-wrapper">
+                    <div class="input">
+                        <label>Columns</label>
+                        <input type="number" name="grid_columns" value="4">
+                    </div>
+                    <div class="input">
+                        <label>Rows</label>
+                        <input type="number" name="grid_rows" value="2">
+                    </div>
+                    <div class="input">
+                        <label>Gutter X</label>
+                        <input type="number" name="grid_gutter_x" value="8">
+                    </div>
+                    <div class="input">
+                        <label>Gutter Y</label>
+                        <input type="number" name="grid_gutter_y" value="12">
+                    </div>
+               </div>
+            </div>
+        </div>
+        <div class="page-footer">
+            <button class="btn btn-outline js-close-plugin">Close</button>
+            <button class="btn primary js-apply-page-function">Apply</button>
+        </div>
+    </div>
+
+    <div class="page sub d-none" id="page__columns_generator" data-action="create-columns">
+        <div class="page-header">
+           <div class="left">
+                <div class="icon-btn back js-to-menu">
+                    <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M1 13L7 7L1 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>          
+                </div>
+                <p class="page-title">Columns Generator</p>
+           </div>
+           <div class="right">
+                <div class="icon-btn info">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M6.67206 6.60001C6.86014 6.06534 7.23138 5.6145 7.72002 5.32732C8.20866 5.04014 8.78317 4.93516 9.3418 5.03098C9.90042 5.1268 10.4071 5.41723 10.7721 5.85083C11.1371 6.28444 11.3369 6.83323 11.3361 7.40001C11.3361 9.00001 8.93606 9.80001 8.93606 9.80001" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M9 13H9.008" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>     
+                </div>
+           </div>
+        </div>
+        <div class="page-body">
+            <div class="settings-preview">
+                <small class="section-label">Preview</small>
+                <div class="columns">
+                    <div class="column"></div>
+                    <div class="column"></div>
+                </div>
+            </div>
+            <div class="settings-group">
+                <h2 class="settings-title">Grid size</h2> 
+                <div class="input-wrapper">
+                    <div class="input">
+                        <label>Columns</label>
+                        <input type="number" name="grid_columns" value="2">
+                    </div>
+                    <div class="input">
+                        <label>Gutter</label>
+                        <input type="number" name="grid_gutter" value="16">
+                    </div>
+                </div>
+             </div>
+        </div>
+        <div class="page-footer">
+            <button class="btn btn-outline js-close-plugin">Close</button>
+            <button class="btn primary js-apply-page-function">Apply</button>
+        </div>
+    </div>
+
+    <div class="page sub d-none" id="page__contrast_checker" style="--contrast-primary:#fff; --contrast-secondary:#000;">
+        <div class="page-header">
+            <div class="left">
+                 <div class="icon-btn back js-to-menu">
+                     <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M1 13L7 7L1 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>          
+                 </div>
+                 <p class="page-title">Contrast checker</p>
+            </div>
+            <div class="right">
+                 <div class="icon-btn info">
+                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M6.67206 6.60001C6.86014 6.06534 7.23138 5.6145 7.72002 5.32732C8.20866 5.04014 8.78317 4.93516 9.3418 5.03098C9.90042 5.1268 10.4071 5.41723 10.7721 5.85083C11.1371 6.28444 11.3369 6.83323 11.3361 7.40001C11.3361 9.00001 8.93606 9.80001 8.93606 9.80001" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M9 13H9.008" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>     
+                 </div>
+            </div>
+         </div>
+         <div class="page-body">
+            <div class="settings-preview contrast_checker">
+                <small class="section-label">Preview</small>
+                <div class="text">
+                    <h3>Primary heading</h3>
+                    <p>Small text</p>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="header">
+                    <h2 class="settings-title">Selection</h2> 
+                    <div class="icon-btn swap" id="swap_contrast_colors">
+                        <svg width="14" height="17" viewBox="0 0 14 17" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M10.4286 4.42859H1" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M4.42859 7.85717L1 4.42859L4.42859 1" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M3.57145 12.1428H13.0001" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M9.57148 15.5714L13.0001 12.1428L9.57148 8.71423" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                    </div>
+                </div>
+                <div class="input-wrapper colors">
+                     <div class="input">
+                         <label>Primary</label>
+                         <c class="color_preview primary"></c>
+                         <input type="text" name="primary_color" value="#fff">
+                     </div>
+                     <div class="input">
+                         <label>Secondary</label>
+                         <c class="color_preview secondary"></c>
+                         <input type="text" name="secondary_color" value="#000">
+                     </div>
+                </div>
+             </div>
+            <div class="settings-group">
+                <h2 class="settings-title">Contrast</h2> 
+                <div class="contrast-results" id="contrast_results">
+
+                </div>
+             </div>
+         </div>
+    </div>
+
+</div>
+
+
+<script> 
+    const mainPage = document.getElementById('page__main');
+    const mainPageLinks = document.querySelectorAll('#page__main .page-links .link');
+    const toMainPageLinks = document.querySelectorAll('.js-to-menu');
+    const closePluginLinks = document.querySelectorAll('.js-close-plugin');
+    const applyFunctionLinks = document.querySelectorAll('.js-apply-page-function');
+    const swapContrastColors = document.getElementById('swap_contrast_colors');
+
+    // Handle plugin to UI messages
+    onmessage = (event) => {
+        if (event.data.pluginMessage.type === 'checkContrast') {checkContrast(event.data.pluginMessage.data)}
+    }
+
+    // Handle menu clicks
+    mainPageLinks.forEach(link => {
+        link.addEventListener('click', function(){
+            let page = link.dataset.page;
+            let target = document.getElementById('page__' + page);
+            target.classList.remove('d-none');
+            mainPage.classList.add('d-none');
+        })
+    })
+
+    // Handle back to menu buttons
+    toMainPageLinks.forEach(link => {
+        link.addEventListener('click', function(){
+            let page = document.querySelector('.page:not(.d-none)');
+            page.classList.add('d-none');
+            mainPage.classList.remove('d-none');
+        })
+    })
+
+    // Handle general close plugin buttons
+    closePluginLinks.forEach(link => {
+        link.addEventListener('click', function(){
+            parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
+        })
+    })
+
+    // Post general page functions
+    applyFunctionLinks.forEach(link => {
+        link.addEventListener('click', function(){
+            const page = link.closest('.page');
+            const action = page.dataset.action;
+            const inputs = page.querySelectorAll('input');
+            const data = {};
+            inputs.forEach(input => {
+                if(input.type == 'radio' && input.checked == false) { return }
+                data[input.name] = input.value;
+            });
+            parent.postMessage({ pluginMessage: { type: action, data: data } }, '*');
+        })
+    })
+
+
+    //
+    //
+    // Columns generator
+    document.querySelector('#page__columns_generator input[name="grid_columns"]').addEventListener('change', function() { previewColumns(); })
+    document.querySelector('#page__columns_generator input[name="grid_gutter"]').addEventListener('change', function() { previewColumns(); })
+    function previewColumns() {
+        const preview = document.querySelector('#page__columns_generator .settings-preview .columns');
+        const columns = parseInt(document.querySelector('#page__columns_generator input[name="grid_columns"]').value);
+        const gutter = parseInt(document.querySelector('#page__columns_generator input[name="grid_gutter"]').value);
+        preview.innerHTML = '';
+        preview.style = 'column-gap:'+(gutter*0.5)+'px;';
+        for (let i = 0; i < columns; i++) {
+            preview.innerHTML += '<div class="column"></div>';
+        }
+    }
+
+
+    //
+    //
+    // Contrast checker
+    swapContrastColors.addEventListener('click', function() { callCheckContrast(true); })
+    document.querySelector('#page__contrast_checker input[name="primary_color"]').addEventListener('change', function() { callCheckContrast(); })
+    document.querySelector('#page__contrast_checker input[name="secondary_color"]').addEventListener('change', function() { callCheckContrast(); })
+    function callCheckContrast(swap = false) {
+        let data = {}
+        const page = document.getElementById('page__contrast_checker');
+        if(swap) {
+            data.bg = page.querySelector('input[name="primary_color"]').value.substring(1);
+            data.fg = page.querySelector('input[name="secondary_color"]').value.substring(1);
+        } else {
+            data.fg = page.querySelector('input[name="primary_color"]').value.substring(1);
+            data.bg = page.querySelector('input[name="secondary_color"]').value.substring(1);
+        }
+        checkContrast(data)
+    }
+
+    function checkContrast(data) {
+        const page = document.getElementById('page__contrast_checker');
+        if(page.classList.contains('d-none')) { return }
+        
+        const primaryInput = page.querySelector('input[name="primary_color"]');
+        const secondaryInput = page.querySelector('input[name="secondary_color"]');
+        const resultHTML = document.getElementById('contrast_results');
+        let result = {};
+        
+        console.log('Checking contrast...')
+        var request = new XMLHttpRequest();
+        request.open('GET', 'https://webaim.org/resources/contrastchecker/?fcolor=' + data.fg + '&bcolor=' + data.bg + '&api')
+        request.responseType = 'json'
+        request.onload = () => {
+            console.log('Done')
+            primaryInput.value = '#' + data.fg;
+            secondaryInput.value = '#' + data.bg;
+            page.style = '--contrast-primary:#'+data.fg+'; --contrast-secondary:#'+data.bg+';';
+
+            result.smallText = false;
+            result.largeText = false;
+            result.rating = "Very Bad";
+
+            if(request.response.ratio > 12) { result.rating = "Excelent"; }
+            else if(request.response.ratio > 7) { result.rating = "Very Good"; }
+            else if(request.response.ratio > 4.5) { result.rating = "Good"; }
+            else if(request.response.ratio > 3) { result.rating = "Bad"; }
+            if(request.response.AA == 'pass') { result.smallText = true }
+            if(request.response.AALarge == 'pass') { result.largeText = true }
+            
+            resultHTML.innerHTML = `
+                <div class="contrast">
+                    <div class="main">
+                        <p class="ratio">${request.response.ratio}</p>
+                        <p class="rating">${result.rating}</p>
+                    </div>
+                    <div class="small ${(result.smallText == true) ? 'checked' : null }">
+                        Small text
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="8" cy="8" r="8" fill="black"/> <path d="M12 6L6.5 11L4 8.72727" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                    </div>    
+                    <div class="large ${(result.largeText == true) ? 'checked' : null }">
+                        Large text
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="8" cy="8" r="8" fill="black"/> <path d="M12 6L6.5 11L4 8.72727" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                    </div>    
+                </div>
+            `;
+        };
+        request.send()
+    }
+    checkContrast({fg: '#000', bg: '#fff'}) // Fill with placeholder on Init
+
+
+</script>
