@@ -28,7 +28,7 @@ figma.on("selectionchange", () => {
 // Grid function
 function createGrid(msg:any) {
     const selectedNode: any = figma.currentPage.selection[0];
-    if (!selectedNode) { return }
+    if (!selectedNode) { figma.notify('Please select an element'); return; }
     const data = msg.data;
     const gridDirection = data.grid_direction;
     const gridColumns = parseInt(data.grid_columns, 10);
@@ -36,35 +36,43 @@ function createGrid(msg:any) {
     const gridGutterX = parseInt(data.grid_gutter_x, 10);
     const gridGutterY = parseInt(data.grid_gutter_y, 10);    
     const clonedNodes: any[] = [];
-    if(gridDirection !== 'vertical') {
+    if(gridDirection == 'vertical') {
         for (let i = 0; i < gridColumns; i++) {
             let clone = selectedNode.clone();
             clone.x = ((clone.width + gridGutterX) * i);
             clonedNodes.push(clone);
-            if(gridDirection == 'full') {
-                for (let r = 0; r < (gridRows - 1); r++) {
-                    let child = clone.clone();
-                    child.y = ((child.height + gridGutterY) * r);
-                    clonedNodes.push(child);
-                }
-            }
         }
-    } else {
+    } else if(gridDirection == 'horizontal') {
         for (let i = 0; i < gridRows; i++) {
             let clone = selectedNode.clone();
             clone.y = ((clone.height + gridGutterY) * i);
             clonedNodes.push(clone);
         }
+    } else {
+        const clonedRows: any[] = [];
+        for (let i = 0; i < gridColumns; i++) {
+            let clone = selectedNode.clone();
+            clone.x = ((clone.width + gridGutterX) * i);
+            clonedRows.push(clone);
+        }
+        const rowGroup = figma.group(clonedRows, selectedNode.parent);
+        for (let i = 0; i < gridRows; i++) {
+            let clone = rowGroup.clone();
+            clone.y = ((clone.height + gridGutterY) * i);
+            clonedNodes.push(clone);
+        }
+        rowGroup.remove();
     }
-    const gridGroup = figma.group(clonedNodes, figma.currentPage);
+    const gridGroup = figma.group(clonedNodes, selectedNode.parent);
     gridGroup.x = selectedNode.x;
     gridGroup.y = selectedNode.y;
+    figma.notify('Created a grid from "'+selectedNode.name+'"');
     selectedNode.remove();
 }
 
 function createColumns(msg:any) {
     const selectedNode: any = figma.currentPage.selection[0];
-    if (!selectedNode) { return }
+    if (!selectedNode) { figma.notify('Please select an element'); return; }
     const data = msg.data;
     const gridColumns = parseInt(data.grid_columns, 10);
     const gridGutter = parseInt(data.grid_gutter, 10);
@@ -76,9 +84,10 @@ function createColumns(msg:any) {
         clone.x = ((clone.width + gridGutter) * i);
         clonedNodes.push(clone);
     }
-    const gridGroup = figma.group(clonedNodes, figma.currentPage);
+    const gridGroup = figma.group(clonedNodes, selectedNode.parent);
     gridGroup.x = selectedNode.x;
     gridGroup.y = selectedNode.y;
+    figma.notify('Created columns from "'+selectedNode.name+'"');
     selectedNode.remove();
 }
 
