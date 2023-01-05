@@ -34,6 +34,7 @@
     .page > .page-body > .settings-group .input-wrapper input[type="radio"] + label {padding: 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); display: flex; align-items: center; flex-direction: column; transition: .1s ease;}
     .page > .page-body > .settings-group .input-wrapper input[type="radio"] + label:hover {background-color: #f4f4f4; }
     .page > .page-body > .settings-group .input-wrapper input[type="radio"] + label p {font-weight: 600; font-size: 16px; margin-top: 8px;}
+    .page > .page-body > .settings-group .input-wrapper input[type="radio"]:not(:checked) + label svg {opacity: .35;}
     .page > .page-body > .settings-group .input-wrapper input[type="radio"]:checked + label {background-color: var(--primary); border-color: var(--primary);}
     .page > .page-body > .settings-group .input-wrapper input[type="number"] {text-align: center; padding-left: 18px;}
     .page > .page-body > .settings-group .input-wrapper label {font-size: 13px; margin-bottom: 4px; display: inline-block; font-weight: 500; color: #000;}
@@ -41,7 +42,7 @@
 
     .page > .page-footer {position: absolute; bottom: 0; left: 0; right: 0; padding: 15px; border-top: 1px solid var(--border); display: grid; align-items: center; grid-template-columns: repeat(2, 1fr); column-gap: 8px;}
 
-    .page > .page-overlay {position: absolute; inset: 0; backdrop-filter: brightness(105%)blur(5px); z-index: 1; padding: 15px; display: flex; align-items: center; text-align: center; justify-content: center; cursor: pointer;}
+    .page > .page-overlay {position: absolute; inset: 0; background-color: rgb(255 255 255 / 85%); backdrop-filter: blur(5px); z-index: 1; padding: 15px; display: flex; align-items: center; text-align: center; justify-content: center; cursor: pointer;}
 
     #page__main .page-links {display: flex; flex-direction: column; row-gap: 10px; padding: 15px;}
     #page__main .page-links .link {border: 1px solid var(--border); position: relative; border-radius: 8px; padding: 24px; display: flex; align-items: center; column-gap: 16px; transition: 0.1s ease; cursor: pointer;}
@@ -112,7 +113,7 @@
         </div>
     </div>
 
-    <div class="page sub d-none" id="page__grid_generator" data-action="create-grid" data-info="">
+    <div class="page sub d-none" id="page__grid_generator" data-action="create-grid" data-info="Select the item you want to have repeated. Choose your grid direction and size. Off you go!">
         <div class="page-header">
            <div class="left">
                 <div class="icon-btn back js-to-menu">
@@ -181,7 +182,7 @@
         </div>
     </div>
 
-    <div class="page sub d-none" id="page__columns_generator" data-action="create-columns">
+    <div class="page sub d-none" id="page__columns_generator" data-action="create-columns" data-info="Select the item you want to split into columns. Choose the amount of columns and the gutter. Off you go!">
         <div class="page-header">
            <div class="left">
                 <div class="icon-btn back js-to-menu">
@@ -204,7 +205,7 @@
                 </div>
             </div>
             <div class="settings-group">
-                <h2 class="settings-title">Grid size</h2> 
+                <h2 class="settings-title">Column settings</h2> 
                 <div class="input-wrapper">
                     <div class="input">
                         <label>Columns</label>
@@ -223,7 +224,7 @@
         </div>
     </div>
 
-    <div class="page sub d-none" id="page__contrast_checker" style="--contrast-primary:#fff; --contrast-secondary:#000;">
+    <div class="page sub d-none" id="page__contrast_checker" style="--contrast-primary:#fff; --contrast-secondary:#000;" data-info="Select 2 object to check contrast agains each-other. Alternatively, you can fill in the colors yourself.">
         <div class="page-header">
             <div class="left">
                  <div class="icon-btn back js-to-menu">
@@ -322,9 +323,10 @@
         link.addEventListener('click', function(){
             let page = link.closest('.page');
             let info = document.createElement('div');
+            let text = page.dataset.info;
             info.classList.add('page-overlay');
             info.innerHTML = `
-                <div class="text">Test</div>;
+                <div class="text">${text}</div>
             `;
             page.appendChild(info);
             info.addEventListener('click', function(){
